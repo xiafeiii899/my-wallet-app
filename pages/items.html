@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Pro - Liquid</title>
+    <style>
+        :root {
+            --glass: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.25);
+            --text: #ffffff;
+            --primary: #60a5fa;
+            --success: #34d399;
+            --danger: #fb7185;
+            --warning: #fbbf24;
+            --purple: #d8b4fe;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+            background-attachment: fixed; margin: 0; padding: 0;
+            color: var(--text); min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px);
+            padding: 20px; border-bottom: 1px solid var(--glass-border);
+            display: flex; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 100;
+        }
+
+        .back-btn { text-decoration: none; color: white; font-size: 1.2rem; opacity: 0.7; }
+
+        .container { padding: 20px; padding-bottom: 100px; }
+
+        .card { 
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); 
+            padding: 20px; border-radius: 25px; border: 1px solid var(--glass-border); 
+            margin-bottom: 20px; 
+        }
+
+        /* --- STATS BAR --- */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-mini { background: var(--glass); padding: 15px; border-radius: 20px; border: 1px solid var(--glass-border); text-align: center; }
+        .stat-mini small { font-size: 0.7rem; opacity: 0.7; display: block; }
+        .stat-mini b { font-size: 1rem; color: var(--primary); }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.8rem; margin-bottom: 5px; opacity: 0.8; }
+        input { 
+            width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.05); 
+            border: 1px solid var(--glass-border); border-radius: 15px; 
+            color: white; outline: none; box-sizing: border-box; 
+        }
+
+        .search-bar { margin-bottom: 20px; position: relative; }
+        .search-bar input { padding-left: 40px; background: rgba(255,255,255,0.1); border-radius: 20px; }
+        .search-bar::before { content: '🔍'; position: absolute; left: 15px; top: 12px; opacity: 0.5; }
+
+        .btn { 
+            padding: 12px; border: none; border-radius: 15px; font-weight: 600; 
+            cursor: pointer; color: white; transition: 0.2s; width: 100%;
+        }
+        .btn-primary { background: linear-gradient(90deg, #3b82f6, #2563eb); }
+        
+        .item-card {
+            background: var(--glass); padding: 15px; border-radius: 20px;
+            border: 1px solid var(--glass-border); margin-bottom: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: 0.3s;
+        }
+        .low-stock { border-color: var(--danger); background: rgba(251, 113, 133, 0.1); }
+        .low-stock .stock-badge { background: var(--danger); color: white; border-color: var(--danger); animation: pulse 2s infinite; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        .stock-badge {
+            background: rgba(0, 0, 0, 0.3); padding: 4px 12px;
+            border-radius: 10px; font-size: 0.85rem; color: var(--primary);
+            border: 1px solid var(--primary); font-weight: bold;
+        }
+
+        .action-btns { display: flex; gap: 6px; margin-top: 10px; }
+        .action-btn { 
+            flex: 1; padding: 8px 4px; border-radius: 10px; border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.05); color: white; cursor: pointer; font-size: 0.7rem;
+        }
+        .btn-sell { background: var(--success); color: #0f172a; font-weight: bold; border: none; }
+        
+        .empty-msg { text-align: center; opacity: 0.5; margin-top: 40px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="../index.html" class="back-btn">❮</a>
+        <h3 style="margin: 0;">Inventory Management</h3>
+    </div>
+
+    <div class="container">
+        
+        <div class="stats-grid">
+            <div class="stat-mini">
+                <small>စုစုပေါင်းပစ္စည်းတန်ဖိုး</small>
+                <b id="totalStockValue">0 K</b>
+            </div>
+            <div class="stat-mini">
+                <small>အမျိုးအစား စုစုပေါင်း</small>
+                <b id="totalItemCount">0 မျိုး</b>
+            </div>
+        </div>
+
+        <div class="card">
+            <h4 style="margin: 0 0 15px 0;" id="formTitle">ပစ္စည်းအသစ်ထည့်ရန် ✨</h4>
+            <input type="hidden" id="editId">
+            <div class="input-group">
+                <label>ပစ္စည်းအမည်</label>
+                <input type="text" id="itemName" placeholder="ဥပမာ - Coffee Bean">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="input-group">
+                    <label>ဈေးနှုန်း (K)</label>
+                    <input type="number" id="itemPrice" placeholder="0">
+                </div>
+                <div class="input-group">
+                    <label>အရေအတွက်</label>
+                    <input type="number" id="itemQty" placeholder="0">
+                </div>
+            </div>
+            <button class="btn btn-primary" id="saveBtn" onclick="addItem()">ပစ္စည်းစာရင်းသွင်းမည်</button>
+            <button class="btn btn-danger" id="cancelEdit" style="display:none; margin-top:10px; background:none; border:1px solid var(--glass-border);" onclick="resetForm()">မပြင်တော့ပါ</button>
+        </div>
+
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="ပစ္စည်းအမည်ဖြင့် ရှာရန်..." oninput="renderInventory()">
+        </div>
+
+        <h4 style="margin: 10px 0 15px 5px;">လက်ကျန်စာရင်းများ 📦</h4>
+        <div id="inventoryList"></div>
+    </div>
+
+    <script>
+        let inventory = JSON.parse(localStorage.getItem('my_inventory_v1')) || [];
+        const LOW_STOCK_LIMIT = 5; // ၅ ခုအောက်ဆိုရင် သတိပေးမယ်
+
+        function addItem() {
+            const name = document.getElementById('itemName').value;
+            const price = parseFloat(document.getElementById('itemPrice').value) || 0;
+            const qty = parseInt(document.getElementById('itemQty').value) || 0;
+            const editId = document.getElementById('editId').value;
+
+            if (!name) return alert("အမည်ထည့်ပါ");
+
+            if(editId) {
+                // ပြန်ပြင်တဲ့ Logic
+                const index = inventory.findIndex(i => i.id == editId);
+                inventory[index] = { ...inventory[index], name, price, qty };
+            } else {
+                // အသစ်ထည့်တဲ့ Logic
+                const newItem = { id: Date.now(), name, price, qty };
+                inventory.unshift(newItem);
+            }
+
+            saveAndRender();
+            resetForm();
+        }
+
+        function editItem(id) {
+            const item = inventory.find(i => i.id === id);
+            if (item) {
+                document.getElementById('itemName').value = item.name;
+                document.getElementById('itemPrice').value = item.price;
+                document.getElementById('itemQty').value = item.qty;
+                document.getElementById('editId').value = item.id;
+                
+                document.getElementById('formTitle').innerText = "ပစ္စည်းအချက်အလက် ပြင်မည် 📝";
+                document.getElementById('saveBtn').innerText = "ပြင်ဆင်မှုကို သိမ်းမည်";
+                document.getElementById('cancelEdit').style.display = "block";
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemPrice').value = '';
+            document.getElementById('itemQty').value = '';
+            document.getElementById('editId').value = '';
+            document.getElementById('formTitle').innerText = "ပစ္စည်းအသစ်ထည့်ရန် ✨";
+            document.getElementById('saveBtn').innerText = "ပစ္စည်းစာရင်းသွင်းမည်";
+            document.getElementById('cancelEdit').style.display = "none";
+        }
+
+        function updateStock(id, change) {
+            const item = inventory.find(i => i.id === id);
+            if (item) {
+                item.qty = Math.max(0, item.qty + change);
+                saveAndRender();
+            }
+        }
+
+        function sellItem(id) {
+            const item = inventory.find(i => i.id === id);
+            if (item) {
+                if (item.qty <= 0) return alert("ပစ္စည်းပြတ်နေပါသည်");
+                item.qty -= 1;
+                saveAndRender();
+            }
+        }
+
+        function deleteItem(id) {
+            if (confirm("ဒီပစ္စည်းကို စာရင်းထဲက ဖျက်မှာ သေချာပါသလား?")) {
+                inventory = inventory.filter(i => i.id !== id);
+                saveAndRender();
+            }
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('my_inventory_v1', JSON.stringify(inventory));
+            renderInventory();
+        }
+
+        function renderInventory() {
+            const listDiv = document.getElementById('inventoryList');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            // Filter and Stats Logic
+            const filtered = inventory.filter(item => item.name.toLowerCase().includes(searchTerm));
+            
+            let totalVal = 0;
+            inventory.forEach(i => totalVal += (i.price * i.qty));
+            document.getElementById('totalStockValue').innerText = totalVal.toLocaleString() + " K";
+            document.getElementById('totalItemCount').innerText = inventory.length + " မျိုး";
+
+            if (filtered.length === 0) {
+                listDiv.innerHTML = '<div class="empty-msg">ပစ္စည်းရှာမတွေ့ပါ။</div>';
+                return;
+            }
+
+            listDiv.innerHTML = filtered.map(item => `
+                <div class="item-card ${item.qty < LOW_STOCK_LIMIT ? 'low-stock' : ''}">
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 5px 0;">${item.name}</h4>
+                        <div style="font-size: 0.9rem; color: var(--warning);">${item.price.toLocaleString()} K</div>
+                        <div class="action-btns">
+                            <button class="action-btn" onclick="updateStock(${item.id}, 1)">+ ပေါင်း</button>
+                            <button class="action-btn btn-sell" onclick="sellItem(${item.id})">ရောင်းမည်</button>
+                            <button class="action-btn" onclick="editItem(${item.id})">ပြင်ရန်</button>
+                            <button class="action-btn" style="border-color: rgba(251,113,133,0.3)" onclick="deleteItem(${item.id})">🗑️</button>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="stock-badge">${item.qty} ခု</div>
+                        ${item.qty < LOW_STOCK_LIMIT ? '<small style="color:var(--danger); display:block; margin-top:5px; font-size:0.6rem; font-weight:bold;">Stock နည်းနေပြီ!</small>' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.onload = renderInventory;
+    </script>
+</body>
+</html>
