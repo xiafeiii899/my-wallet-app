@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Inventory Pro - Liquid</title>
+    <style>
+        :root {
+            --glass: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.25);
+            --text: #ffffff;
+            --primary: #60a5fa;
+            --success: #34d399;
+            --danger: #fb7185;
+            --warning: #fbbf24;
+            --purple: #d8b4fe;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+            background-attachment: fixed; margin: 0; padding: 0;
+            color: var(--text); min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px);
+            padding: 20px; border-bottom: 1px solid var(--glass-border);
+            display: flex; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 100;
+        }
+
+        .back-btn { text-decoration: none; color: white; font-size: 1.2rem; opacity: 0.7; }
+
+        .container { padding: 20px; padding-bottom: 100px; }
+
+        /* Stats Card */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .stat-card { background: var(--glass); padding: 15px; border-radius: 20px; border: 1px solid var(--glass-border); text-align: center; }
+        .stat-card small { font-size: 0.65rem; opacity: 0.7; display: block; margin-bottom: 4px; }
+        .stat-card b { font-size: 0.95rem; color: var(--primary); }
+
+        .card { 
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); 
+            padding: 20px; border-radius: 25px; border: 1px solid var(--glass-border); 
+            margin-bottom: 20px; 
+        }
+
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.75rem; margin-bottom: 5px; opacity: 0.8; }
+        input, select { 
+            width: 100%; padding: 12px; background: rgba(255, 255, 255, 0.05); 
+            border: 1px solid var(--glass-border); border-radius: 12px; 
+            color: white; outline: none; box-sizing: border-box; font-size: 0.9rem;
+        }
+
+        .btn { 
+            padding: 14px; border: none; border-radius: 15px; font-weight: 600; 
+            cursor: pointer; color: white; transition: 0.2s; width: 100%;
+        }
+        .btn-primary { background: linear-gradient(90deg, #3b82f6, #2563eb); }
+        .btn-history { background: var(--purple); margin-bottom: 20px; font-size: 0.85rem; }
+        
+        /* Search Bar */
+        .search-box { margin-bottom: 20px; }
+        .search-box input { background: rgba(255,255,255,0.1); border-radius: 20px; padding-left: 15px; border: 1px solid var(--primary); }
+
+        /* Phone Card */
+        .phone-card {
+            background: var(--glass); padding: 18px; border-radius: 22px;
+            border: 1px solid var(--glass-border); margin-bottom: 15px;
+            position: relative; overflow: hidden;
+        }
+        .sold-out { border-color: var(--success); background: rgba(52, 211, 153, 0.05); }
+        .sold-tag { 
+            position: absolute; top: 10px; right: -30px; background: var(--success); 
+            color: black; padding: 5px 40px; transform: rotate(45deg); font-size: 0.7rem; font-weight: bold;
+        }
+
+        .phone-title { font-size: 1.1rem; font-weight: bold; margin: 0 0 5px 0; color: var(--primary); }
+        .spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.75rem; opacity: 0.8; margin-top: 10px; }
+        .price-info { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); }
+        
+        .action-row { display: flex; gap: 8px; margin-top: 15px; }
+        .act-btn { flex: 1; padding: 10px; border-radius: 10px; border: none; font-size: 0.75rem; font-weight: bold; cursor: pointer; }
+        .btn-sell { background: var(--success); color: #000; }
+        .btn-del { background: rgba(251, 113, 133, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+
+        .imei-box { background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 8px; font-family: monospace; font-size: 0.8rem; margin-top: 5px; display: inline-block; }
+        
+        #historySection { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="../index.html" class="back-btn">❮</a>
+        <h3 id="viewTitle" style="margin: 0;">Phone Inventory 📱</h3>
+    </div>
+
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card"><small>လက်ကျန်ဖုန်း</small><b id="totalPhones">0 လုံး</b></div>
+            <div class="stat-card"><small>စုစုပေါင်း အရင်းတန်ဖိုး</small><b id="totalCapital">0 K</b></div>
+            <div class="stat-card" style="grid-column: span 2; border-color: var(--warning);"><small>လက်ကျန်ဖုန်းများ၏ ရောင်းဈေးစုစုပေါင်း</small><b id="totalMarketValue" style="color: var(--warning);">0 K</b></div>
+        </div>
+
+        <button class="btn btn-history" id="toggleViewBtn" onclick="toggleView()">📜 ရောင်းပြီးသားဖုန်းများ ကြည့်ရန်</button>
+
+        <div id="mainSection">
+            <div class="card">
+                <h4 style="margin: 0 0 15px 0;">ဖုန်းအသစ်စာရင်းသွင်းရန် ✨</h4>
+                <div class="input-group"><label>ဖုန်းအမျိုးအစား (Brand/Model Name)</label><input type="text" id="pName" placeholder="ဥပမာ - Redmi Note 13 Pro"></div>
+                <div class="input-grid">
+                    <div class="input-group"><label>အရင်းဈေး (K)</label><input type="number" id="pCap" placeholder="0"></div>
+                    <div class="input-group"><label>ရောင်းဈေး (K)</label><input type="number" id="pSell" placeholder="0"></div>
+                </div>
+                <div class="input-group"><label>အနည်းဆုံးရောင်းမည့်ဈေး (Min Price)</label><input type="number" id="pMin" placeholder="0"></div>
+                <div class="input-grid">
+                    <div class="input-group"><label>IMEI 1</label><input type="text" id="pImei1" placeholder="IMEI 1"></div>
+                    <div class="input-group"><label>IMEI 2</label><input type="text" id="pImei2" placeholder="IMEI 2"></div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                    <div class="input-group"><label>RAM</label><input type="text" id="pRam" placeholder="8GB"></div>
+                    <div class="input-group"><label>Storage</label><input type="text" id="pStorage" placeholder="256GB"></div>
+                    <div class="input-group"><label>CPU</label><input type="text" id="pCpu" placeholder="G99"></div>
+                </div>
+                <button class="btn btn-primary" onclick="addPhone()">ဖုန်းစာရင်းသွင်းမည်</button>
+            </div>
+
+            <div class="search-box"><input type="text" id="pSearch" placeholder="Model သို့မဟုတ် IMEI ဖြင့်ရှာရန်..." oninput="renderPhones()"></div>
+            <div id="phoneList"></div>
+        </div>
+
+        <div id="historySection">
+            <div class="stat-card" style="margin-bottom: 20px; border-color: var(--success);">
+                <small>စုစုပေါင်းရရှိထားသော အမြတ်</small>
+                <b id="totalHistoryProfit" style="color: var(--success); font-size: 1.4rem;">0 K</b>
+            </div>
+            <div id="soldList"></div>
+        </div>
+    </div>
+
+    <script>
+        // Data persists across updates using versioning
+        let phones = JSON.parse(localStorage.getItem('my_phones_v2')) || JSON.parse(localStorage.getItem('my_phones_v1')) || [];
+        let isHistoryView = false;
+
+        function toggleView() {
+            isHistoryView = !isHistoryView;
+            document.getElementById('mainSection').style.display = isHistoryView ? 'none' : 'block';
+            document.getElementById('historySection').style.display = isHistoryView ? 'block' : 'none';
+            document.getElementById('viewTitle').innerText = isHistoryView ? 'Sold History 📜' : 'Phone Inventory 📱';
+            document.getElementById('toggleViewBtn').innerText = isHistoryView ? '🔙 လက်ကျန်ဖုန်းစာရင်းသို့' : '📜 ရောင်းပြီးသားဖုန်းများ ကြည့်ရန်';
+            renderPhones();
+        }
+
+        function addPhone() {
+            const name = document.getElementById('pName').value;
+            const cap = parseFloat(document.getElementById('pCap').value) || 0;
+            const sell = parseFloat(document.getElementById('pSell').value) || 0;
+            const min = parseFloat(document.getElementById('pMin').value) || 0;
+            const imei1 = document.getElementById('pImei1').value;
+            const imei2 = document.getElementById('pImei2').value;
+            const ram = document.getElementById('pRam').value;
+            const storage = document.getElementById('pStorage').value;
+            const cpu = document.getElementById('pCpu').value;
+
+            if(!name || !imei1) return alert("အမည်နှင့် IMEI ထည့်ပါ");
+
+            const newPhone = {
+                id: Date.now(),
+                name, cap, sell, min, imei1, imei2, ram, storage, cpu,
+                status: 'instock',
+                finalSoldPrice: 0,
+                soldDate: null
+            };
+
+            phones.unshift(newPhone);
+            saveData();
+            clearForm();
+        }
+
+        function sellPhone(id) {
+            const phone = phones.find(p => p.id === id);
+            if(!phone) return;
+
+            const soldPrice = prompt(`ရောင်းရငွေ (Selling Price) ကိုထည့်ပါ:\n(အနည်းဆုံးဈေး: ${phone.min.toLocaleString()} K)`, phone.sell);
+            
+            if (soldPrice !== null && !isNaN(soldPrice) && soldPrice !== "") {
+                phone.status = 'sold';
+                phone.finalSoldPrice = parseFloat(soldPrice);
+                phone.soldDate = new Date().toLocaleDateString();
+                saveData();
+                alert("ရောင်းထွက်မှု မှတ်တမ်းတင်ပြီးပါပြီ! ✨");
+            }
+        }
+
+        function deletePhone(id) {
+            if(confirm("ဒီဖုန်းစာရင်းကို အပြီးဖျက်မှာ သေချာပါသလား?")) {
+                phones = phones.filter(p => p.id !== id);
+                saveData();
+            }
+        }
+
+        function saveData() {
+            // Save as v2 to prevent data loss
+            localStorage.setItem('my_phones_v2', JSON.stringify(phones));
+            renderPhones();
+        }
+
+        function renderPhones() {
+            const listDiv = document.getElementById('phoneList');
+            const soldDiv = document.getElementById('soldList');
+            const search = document.getElementById('pSearch').value.toLowerCase();
+            
+            // Dashboard Calculations
+            const inStock = phones.filter(p => p.status === 'instock');
+            const soldHistory = phones.filter(p => p.status === 'sold');
+
+            let currentCap = 0;
+            let currentMarket = 0;
+            inStock.forEach(p => { currentCap += p.cap; currentMarket += p.sell; });
+
+            document.getElementById('totalPhones').innerText = inStock.length + " လုံး";
+            document.getElementById('totalCapital').innerText = currentCap.toLocaleString() + " K";
+            document.getElementById('totalMarketValue').innerText = currentMarket.toLocaleString() + " K";
+
+            // Render Logic
+            if (!isHistoryView) {
+                const filtered = inStock.filter(p => p.name.toLowerCase().includes(search) || p.imei1.includes(search));
+                listDiv.innerHTML = filtered.map(p => `
+                    <div class="phone-card">
+                        <h3 class="phone-title">${p.name}</h3>
+                        <div class="imei-box">IMEI: ${p.imei1}</div>
+                        <div class="spec-grid">
+                            <span>💾 RAM: ${p.ram} | Storage: ${p.storage}</span>
+                            <span>⚙️ CPU: ${p.cpu}</span>
+                        </div>
+                        <div class="price-info">
+                            <div style="display:flex; justify-content:space-between;">
+                                <span style="color:var(--success)">ရောင်းဈေး: <b>${p.sell.toLocaleString()} K</b></span>
+                                <span style="opacity:0.7">Min: ${p.min.toLocaleString()}</span>
+                            </div>
+                            <div style="font-size:0.8rem; opacity:0.6; margin-top:5px;">အရင်း: ${p.cap.toLocaleString()} K</div>
+                        </div>
+                        <div class="action-row">
+                            <button class="act-btn btn-sell" onclick="sellPhone(${p.id})">✅ ရောင်းထွက်ပြီ</button>
+                            <button class="act-btn btn-del" onclick="deletePhone(${p.id})">ဖျက်မည်</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                let totalProfit = 0;
+                soldDiv.innerHTML = soldHistory.map(p => {
+                    const profit = p.finalSoldPrice - p.cap;
+                    totalProfit += profit;
+                    return `
+                        <div class="phone-card sold-out">
+                            <div class="sold-tag">SOLD</div>
+                            <h3 class="phone-title">${p.name}</h3>
+                            <small>ရောင်းသည့်နေ့: ${p.soldDate}</small>
+                            <div class="price-info">
+                                <div style="display:flex; justify-content:space-between; color:var(--success)">
+                                    <span>ရောင်းလိုက်သည့်ဈေး:</span><b>${p.finalSoldPrice.toLocaleString()} K</b>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-top:5px;">
+                                    <span>အမြတ်:</span><b style="color:var(--warning)">+ ${profit.toLocaleString()} K</b>
+                                </div>
+                                <div style="font-size:0.7rem; opacity:0.5; margin-top:5px;">အရင်း: ${p.cap.toLocaleString()} K | IMEI: ${p.imei1}</div>
+                            </div>
+                            <button class="act-btn btn-del" style="width:100%; margin-top:10px;" onclick="deletePhone(${p.id})">Record ဖျက်မည်</button>
+                        </div>
+                    `;
+                }).join('');
+                document.getElementById('totalHistoryProfit').innerText = totalProfit.toLocaleString() + " K";
+            }
+        }
+
+        function clearForm() { document.querySelectorAll('.card input').forEach(i => i.value = ''); }
+        window.onload = renderPhones;
+    </script>
+</body>
+</html>
