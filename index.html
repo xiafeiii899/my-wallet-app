@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Wallet - Liquid Pro</title>
+    <title>My Wallet - Liquid Pro v3 Multi-Lang</title>
     <style>
         :root {
             --glass: rgba(255, 255, 255, 0.15);
@@ -23,22 +23,23 @@
             color: var(--text); min-height: 100vh; overflow-x: hidden;
         }
 
+        /* --- LOCK SCREEN --- */
+        #lock-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0f172a; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10000;
+        }
+        .pin-input-box { background: var(--glass); border: 1px solid var(--glass-border); padding: 25px; border-radius: 20px; text-align: center; }
+        .pin-dots { display: flex; gap: 15px; justify-content: center; margin-top: 20px; }
+        .dot { width: 15px; height: 15px; border-radius: 50%; border: 2px solid var(--primary); }
+        .dot.active { background: var(--primary); }
+
         /* --- LOADING SCREEN --- */
         #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #0f172a; display: flex; justify-content: center; align-items: center; z-index: 9999;
             transition: opacity 0.8s ease, visibility 0.8s;
         }
-        .loader-container { position: relative; text-align: center; }
-        .liquid-ball {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 100px; height: 100px; background: var(--primary);
-            filter: blur(25px); border-radius: 45% 55% 50% 50%;
-            animation: liquidOrbit 3s infinite linear, pulse 2s infinite ease-in-out; opacity: 0.5;
-        }
-        .app-name-loader { position: relative; z-index: 10; font-size: 1.6rem; letter-spacing: 4px; text-transform: uppercase; background: linear-gradient(to right, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold; }
-        @keyframes liquidOrbit { 0% { border-radius: 45% 55% 50% 50%; transform: translate(-50%, -50%) rotate(0deg); } 100% { border-radius: 45% 55% 50% 50%; transform: translate(-50%, -50%) rotate(360deg); } }
-        @keyframes pulse { 0%, 100% { transform: translate(-50%, -50%) scale(1); } 50% { transform: translate(-50%, -50%) scale(1.3); } }
+        .app-name-loader { font-size: 1.6rem; letter-spacing: 4px; text-transform: uppercase; background: linear-gradient(to right, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold; }
         body.loaded #loading-screen { opacity: 0; visibility: hidden; }
 
         /* --- HEADER --- */
@@ -48,12 +49,10 @@
             position: sticky; top: 0; z-index: 100;
         }
         .total-box { text-align: center; margin-bottom: 25px; }
-        .total-box small { opacity: 0.6; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; }
         .total-box h1 { margin: 8px 0; font-size: 2.4rem; text-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         .stat-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
         .stat-item { background: var(--glass); padding: 12px 5px; border-radius: 20px; text-align: center; border: 1px solid var(--glass-border); }
         .stat-item small { font-size: 0.6rem; display: block; margin-bottom: 4px; color: #cbd5e1; }
-        .stat-item b { font-size: 0.85rem; }
 
         /* --- CONTENT --- */
         .container { padding: 25px 20px 120px 20px; }
@@ -63,132 +62,444 @@
 
         .card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: 25px; border-radius: 30px; border: 1px solid var(--glass-border); margin-bottom: 20px; }
         .input-group { margin-bottom: 18px; }
-        label { display: block; font-size: 0.8rem; margin-bottom: 8px; color: #e2e8f0; margin-left: 5px; }
-        input, select { width: 100%; padding: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); border-radius: 18px; font-size: 1rem; color: white; box-sizing: border-box; outline: none; }
-        input:focus { border-color: var(--primary); background: rgba(255, 255, 255, 0.12); }
-        select option { background: #1e1b4b; }
-
+        label { display: block; font-size: 0.8rem; margin-bottom: 8px; color: #e2e8f0; }
+        input, select { width: 100%; padding: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); border-radius: 18px; font-size: 1rem; color: white; outline: none; box-sizing: border-box; }
+        
         .btn { padding: 16px; border: none; border-radius: 20px; font-weight: 600; width: 100%; font-size: 1rem; cursor: pointer; color: white; transition: 0.2s; }
         .btn-primary { background: linear-gradient(90deg, #3b82f6, #2563eb); }
         .btn-danger { background: linear-gradient(90deg, #f43f5e, #e11d48); }
-        .btn:active { transform: scale(0.96); }
+        .btn-success { background: linear-gradient(90deg, #10b981, #059669); }
 
-        /* --- INSIGHTS SPECIFIC --- */
-        .progress-container { background: rgba(0,0,0,0.2); height: 20px; border-radius: 10px; margin: 15px 0; overflow: hidden; border: 1px solid var(--glass-border); }
-        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--success)); width: 0%; transition: 1s ease-in-out; }
-        .health-card { padding: 15px; border-radius: 20px; text-align: center; font-size: 0.9rem; margin-top: 10px; border: 1px solid var(--glass-border); }
-        .health-good { background: rgba(52, 211, 153, 0.1); color: var(--success); }
-        .health-bad { background: rgba(251, 113, 133, 0.1); color: var(--danger); animation: pulseAlert 2s infinite; }
-        @keyframes pulseAlert { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
-        .mini-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 20px; border: 1px solid var(--glass-border); }
-        .mini-card small { font-size: 0.65rem; color: #94a3b8; }
-        .mini-card div { font-size: 1rem; font-weight: bold; margin-top: 5px; }
+        /* --- LINKS CONTAINER --- */
+        .links-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 25px; }
 
-        /* --- NAVIGATION --- */
-        .nav { position: fixed; bottom: 20px; left: 20px; right: 20px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; justify-content: space-around; padding: 12px 0; border: 1px solid var(--glass-border); border-radius: 25px; z-index: 1000; }
-        .nav-btn { border: none; background: none; color: #94a3b8; font-size: 0.65rem; cursor: pointer; opacity: 0.6; transition: 0.3s; }
-        .nav-btn.active { color: #fff; opacity: 1; transform: translateY(-5px); }
+        /* --- LINK BUTTON DESIGN --- */
+        .btn-item-link {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            text-decoration: none;
+            color: white;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-item-link:active { transform: scale(0.97); }
+        .item-link-icon {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--purple), var(--primary));
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 5px 15px rgba(167, 139, 250, 0.3);
+        }
+        .phone-icon { background: linear-gradient(135deg, #60a5fa, #3b82f6); }
+
+        /* --- INSIGHTS DESIGN --- */
+        .progress-container { background: rgba(255,255,255,0.05); height: 14px; border-radius: 10px; margin: 15px 0; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--purple)); width: 0%; transition: 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .status-bar { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 20px; text-align: center; border: 1px solid var(--glass-border); margin-bottom: 20px; font-size: 0.85rem; color: var(--success); }
+        .mini-card { background: var(--glass); padding: 18px; border-radius: 20px; border: 1px solid var(--glass-border); text-align: center; }
+        .mini-card small { font-size: 0.7rem; opacity: 0.7; display: block; margin-bottom: 8px; }
+
+        /* --- NAV --- */
+        .nav { position: fixed; bottom: 20px; left: 15px; right: 15px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: flex; justify-content: space-around; padding: 12px 0; border: 1px solid var(--glass-border); border-radius: 25px; z-index: 1000; }
+        .nav-btn { border: none; background: none; color: #94a3b8; font-size: 0.65rem; cursor: pointer; opacity: 0.6; }
+        .nav-btn.active { color: #fff; opacity: 1; transform: translateY(-5px); transition: 0.3s; }
         .nav-btn div { font-size: 1.3rem; margin-bottom: 4px; }
 
-        .log-card { background: rgba(255, 255, 255, 0.05); padding: 18px; border-radius: 22px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); }
-        .log-amt { font-weight: bold; }
-        ::-webkit-scrollbar { width: 0; }
+        /* --- SETTINGS --- */
+        .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .toggle-box { width: 45px; height: 24px; background: #334155; border-radius: 15px; position: relative; cursor: pointer; transition: 0.3s; }
+        .toggle-box.on { background: var(--success); }
+        .toggle-ball { width: 18px; height: 18px; background: white; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: 0.3s; }
+        .on .toggle-ball { left: 24px; }
+        
+        .log-card { background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 22px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); border-left: 5px solid transparent; }
     </style>
 </head>
 <body>
 
+    <div id="lock-screen">
+        <div class="pin-input-box">
+            <div class="app-name-loader" style="margin-bottom: 20px;">Liquid Secure</div>
+            <div id="lang-pin-text" style="font-size: 0.8rem; opacity: 0.7;">PIN ရိုက်ထည့်ပါ</div>
+            <div class="pin-dots" id="pinDots">
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+            </div>
+            <input type="number" id="pinHiddenInput" style="opacity:0; position:absolute;" autofocus oninput="handlePinInput(this)">
+        </div>
+    </div>
+
     <div id="loading-screen">
-        <div class="loader-container"><div class="liquid-ball"></div><div class="app-name-loader">My Wallet</div></div>
+        <div class="app-name-loader">My Wallet</div>
     </div>
 
     <div class="header-stats">
-        <div class="total-box"><small>Total Balance</small><h1 id="totalCash">0 K</h1></div>
+        <div class="total-box"><small id="lang-total-label" style="opacity:0.6; letter-spacing:2px;">TOTAL BALANCE</small><h1 id="totalCash">0 K</h1></div>
         <div class="stat-row">
-            <div class="stat-item"><small>အရင်း</small><b id="capVal" style="color: var(--primary);">0 K</b></div>
-            <div class="stat-item"><small>စုမိငွေ (70%)</small><b id="savedVal" style="color: var(--purple);">0 K</b></div>
-            <div class="stat-item"><small>သုံးနိုင်ငွေ (30%)</small><b id="spendVal" style="color: var(--warning);">0 K</b></div>
+            <div class="stat-item"><small id="lang-cap-label">အရင်း</small><b id="capVal" style="color: var(--primary);">0 K</b></div>
+            <div class="stat-item"><small id="lang-saved-label">စုမိငွေ (70%)</small><b id="savedVal" style="color: var(--purple);">0 K</b></div>
+            <div class="stat-item"><small id="lang-spend-label">သုံးနိုင်ငွေ (30%)</small><b id="spendVal" style="color: var(--warning);">0 K</b></div>
         </div>
     </div>
 
     <div class="container">
         <section id="page-input" class="page active">
+            
+            <div class="links-container">
+                <a href="pages/items.html" class="btn-item-link">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div class="item-link-icon">📦</div>
+                        <div style="text-align: left;">
+                            <b id="lang-items-btn" style="display: block; font-size: 0.95rem;">ပစ္စည်းစာရင်းများ</b>
+                            <small style="opacity: 0.5; font-size: 0.65rem;">Inventory & Stock</small>
+                        </div>
+                    </div>
+                    <div style="font-size: 1rem; opacity: 0.4;">❯</div>
+                </a>
+
+                <a href="pages/phonelist.html" class="btn-item-link">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div class="item-link-icon phone-icon">📱</div>
+                        <div style="text-align: left;">
+                            <b id="lang-phones-btn" style="display: block; font-size: 0.95rem;">ဖုန်းစာရင်းများ</b>
+                            <small style="opacity: 0.5; font-size: 0.65rem;">Phone Inventory</small>
+                        </div>
+                    </div>
+                    <div style="font-size: 1rem; opacity: 0.4;">❯</div>
+                </a>
+            </div>
+
             <div class="card">
-                <h3 style="margin: 0 0 20px 0; text-align: center;">New Entry ✨</h3>
+                <h3 id="lang-entry-title" style="margin: 0 0 20px 0; text-align: center;">New Entry ✨</h3>
                 <div class="input-group">
-                    <label>အမျိုးအစား</label>
+                    <label id="lang-type-label">အမျိုးအစား</label>
                     <select id="entryType" onchange="toggleInputs()">
-                        <option value="in">ဝင်ငွေ (အရင်း + အမြတ်)</option>
-                        <option value="bus_out">လုပ်ငန်းသုံး ထွက်ငွေ</option>
-                        <option value="per_out">ကိုယ်ပိုင်သုံး ထွက်ငွေ</option>
+                        <option value="in" id="lang-opt-in">ဝင်ငွေ (အရင်း + အမြတ်)</option>
+                        <option value="bus_out" id="lang-opt-bus">လုပ်ငန်းသုံး ထွက်ငွေ</option>
+                        <option value="per_out" id="lang-opt-per">ကိုယ်ပိုင်သုံး ထွက်ငွေ</option>
                     </select>
                 </div>
                 <div id="inFields">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <div class="input-group"><label>အရင်း</label><input type="number" id="inCap" placeholder="0" oninput="liveSplit()"></div>
-                        <div class="input-group"><label>အမြတ်</label><input type="number" id="inProf" placeholder="0" oninput="liveSplit()"></div>
+                        <div class="input-group"><label id="lang-in-cap-label">အရင်း</label><input type="number" id="inCap" placeholder="0"></div>
+                        <div class="input-group"><label id="lang-in-prof-label">အမြတ်</label><input type="number" id="inProf" placeholder="0"></div>
                     </div>
                 </div>
                 <div id="outFields" style="display:none">
-                    <div class="input-group"><label>ပမာဏ</label><input type="number" id="outAmt" placeholder="0"></div>
+                    <div class="input-group"><label id="lang-out-amt-label">ပမာဏ</label><input type="number" id="outAmt" placeholder="0"></div>
                 </div>
-                <div class="input-group"><label>အကြောင်းအရာ</label><input type="text" id="desc" placeholder="..."></div>
+                <div class="input-group"><label id="lang-desc-label">အကြောင်းအရာ</label><input type="text" id="desc" placeholder="..."></div>
                 <button class="btn btn-primary" id="submitBtn" onclick="processEntry()">သိမ်းဆည်းမည်</button>
             </div>
         </section>
 
         <section id="page-history" class="page">
-            <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 15px;">
-                <h3 style="margin:0;">History 📖</h3>
-                <button onclick="confirmReset()" style="color:var(--danger); border:none; background:none; font-size:0.7rem;">Reset Data</button>
-            </div>
+            <h3 id="lang-history-title" style="margin: 0 0 15px 0;">History 📖</h3>
             <div id="logList"></div>
         </section>
 
         <section id="page-insights" class="page">
             <div class="card">
-                <h3 style="margin-top:0;">Profit Goal 🎯</h3>
+                <h3 id="lang-goal-title" style="margin: 0 0 15px 0;">Profit Goal 🎯</h3>
                 <div style="display:flex; justify-content: space-between; font-size: 0.8rem; opacity: 0.8;">
-                    <span>တိုးတက်မှု</span><span id="goalPercent">0%</span>
+                    <span id="lang-progress-label">တိုးတက်မှု</span><span id="goalPercent">0%</span>
                 </div>
                 <div class="progress-container"><div class="progress-bar" id="goalBar"></div></div>
-                <small style="color: var(--purple); cursor: pointer;" onclick="setGoal()">Set Target (Goal)</small>
+                <small id="lang-set-goal" style="color: var(--purple); cursor: pointer; text-decoration: underline;" onclick="setGoal()">Set Target (Goal)</small>
             </div>
 
-            <div id="walletHealth" class="health-card health-good">Wallet Status: Good ✅</div>
+            <div class="status-bar" id="walletStatus">
+                Wallet Status: Healthy ✅
+            </div>
 
-            <div class="stats-grid">
-                <div class="mini-card"><small>စုစုပေါင်းအမြတ်</small><div id="statTotalProf" style="color: var(--success);">0 K</div></div>
-                <div class="mini-card"><small>စုစုပေါင်းအသုံး</small><div id="statTotalSpend" style="color: var(--danger);">0 K</div></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                <div class="mini-card"><small id="lang-total-prof-label">စုစုပေါင်းအမြတ်</small><div id="statTotalProf" style="color: var(--success); font-weight: bold; font-size: 1.1rem;">0 K</div></div>
+                <div class="mini-card"><small id="lang-total-spend-label">စုစုပေါင်းအသုံး</small><div id="statTotalSpend" style="color: var(--danger); font-weight: bold; font-size: 1.1rem;">0 K</div></div>
+            </div>
+
+            <div class="card" style="padding: 15px; text-align: center;" onclick="exportData()">
+                <span id="lang-backup-label" style="font-size: 0.9rem;">🎂 Backup Data သိမ်းဆည်းရန်</span>
+            </div>
+        </section>
+
+        <section id="page-settings" class="page">
+            <h3 id="lang-settings-title" style="margin-top:0;">Settings ⚙️</h3>
+            
+            <div class="card" style="border: 1px solid var(--purple);">
+                <h4 id="lang-reinvest-title" style="margin: 0 0 15px 0; color: var(--purple);">Re-invest (အရင်းထဲပေါင်းမည်)</h4>
+                <div class="input-group">
+                    <label id="lang-reinvest-label">စုမိငွေမှ အရင်းထဲသို့ ပေါင်းထည့်မည့်ပမာဏ</label>
+                    <input type="number" id="reinvestAmt" placeholder="0">
+                </div>
+                <button id="lang-reinvest-btn" class="btn btn-success" style="padding: 12px;" onclick="reinvestSaved()">အရင်းထဲသို့ ပြောင်းရွှေ့မည်</button>
+                <small id="lang-reinvest-note" style="display:block; margin-top:10px; opacity:0.6; font-size:0.7rem;">* စုမိငွေ (Saved Profit) ကို လုပ်ငန်းအရင်းအဖြစ် ပြန်လည်အသုံးပြုရန်</small>
+            </div>
+
+            <div class="card">
+                <div class="setting-item">
+                    <span id="lang-lang-label">Language (ဘာသာစကား)</span>
+                    <select id="langSelect" style="width: auto; padding: 5px 10px;" onchange="changeLang(this.value)">
+                        <option value="my">Myanmar</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <span id="lang-pin-lock">Passcode Lock 🔒</span>
+                    <div class="toggle-box" id="pinToggle" onclick="togglePinLock()">
+                        <div class="toggle-ball"></div>
+                    </div>
+                </div>
+                <div class="setting-item" onclick="setNewPin()" style="cursor:pointer">
+                    <span id="lang-change-pin">Change PIN (နံပါတ်ပြောင်းမည်)</span>
+                    <span>❯</span>
+                </div>
+                <div class="setting-item" onclick="exportData()" style="cursor:pointer">
+                    <span id="lang-export">Export Backup (.json)</span>
+                    <span>📥</span>
+                </div>
+                <button id="lang-reset-btn" class="btn btn-danger" style="margin-top:20px; font-size:0.8rem; padding:12px;" onclick="confirmReset()">Reset All Data</button>
             </div>
         </section>
     </div>
 
     <nav class="nav">
-        <button class="nav-btn active" onclick="changePage('page-input', this)"><div>➕</div><span>ENTRY</span></button>
-        <button class="nav-btn" onclick="changePage('page-history', this)"><div>📜</div><span>LOGS</span></button>
-        <button class="nav-btn" onclick="changePage('page-insights', this)"><div>📊</div><span>INSIGHTS</span></button>
+        <button class="nav-btn active" onclick="changePage('page-input', this)"><div>➕</div><span id="lang-nav-entry">ENTRY</span></button>
+        <button class="nav-btn" onclick="changePage('page-history', this)"><div>📜</div><span id="lang-nav-history">LOGS</span></button>
+        <button class="nav-btn" onclick="changePage('page-insights', this)"><div>📊</div><span id="lang-nav-insights">INSIGHTS</span></button>
+        <button class="nav-btn" onclick="changePage('page-settings', this)"><div>⚙️</div><span id="lang-nav-settings">SETTINGS</span></button>
     </nav>
 
     <script>
-        let data = JSON.parse(localStorage.getItem('my_wealth_v1')) || {
-            capital: 0, savedProfit: 0, spendableProfit: 0, logs: [], 
-            target: 1000000, totalProfitEver: 0, totalSpendEver: 0
+        // Language Data
+        const translations = {
+            my: {
+                pinText: "PIN ရိုက်ထည့်ပါ",
+                totalLabel: "TOTAL BALANCE",
+                capLabel: "အရင်း",
+                savedLabel: "စုမိငွေ (70%)",
+                spendLabel: "သုံးနိုင်ငွေ (30%)",
+                entryTitle: "New Entry ✨",
+                itemsBtn: "ပစ္စည်းစာရင်းများ",
+                phonesBtn: "ဖုန်းစာရင်းများ",
+                typeLabel: "အမျိုးအစား",
+                optIn: "ဝင်ငွေ (အရင်း + အမြတ်)",
+                optBus: "လုပ်ငန်းသုံး ထွက်ငွေ",
+                optPer: "ကိုယ်ပိုင်သုံး ထွက်ငွေ",
+                inCap: "အရင်း",
+                inProf: "အမြတ်",
+                outAmt: "ပမာဏ",
+                desc: "အကြောင်းအရာ",
+                submit: "သိမ်းဆည်းမည်",
+                historyTitle: "History 📖",
+                goalTitle: "Profit Goal 🎯",
+                progressLabel: "တိုးတက်မှု",
+                setGoal: "Set Target (Goal)",
+                totalProf: "စုစုပေါင်းအမြတ်",
+                totalSpend: "စုစုပေါင်းအသုံး",
+                backup: "🎂 Backup Data သိမ်းဆည်းရန်",
+                settingsTitle: "Settings ⚙️",
+                reinvestTitle: "Re-invest (အရင်းထဲပေါင်းမည်)",
+                reinvestLabel: "စုမိငွေမှ အရင်းထဲသို့ ပေါင်းထည့်မည့်ပမာဏ",
+                reinvestBtn: "အရင်းထဲသို့ ပြောင်းရွှေ့မည်",
+                reinvestNote: "* စုမိငွေ (Saved Profit) ကို လုပ်ငန်းအရင်းအဖြစ် ပြန်လည်အသုံးပြုရန်",
+                langLabel: "Language (ဘာသာစကား)",
+                pinLock: "Passcode Lock 🔒",
+                changePin: "Change PIN (နံပါတ်ပြောင်းမည်)",
+                export: "Export Backup (.json)",
+                reset: "Reset All Data",
+                navEntry: "ENTRY",
+                navHistory: "LOGS",
+                navInsights: "INSIGHTS",
+                navSettings: "SETTINGS",
+                msgPinError: "PIN မှားယွင်းနေပါသည်။",
+                msgPinSuccess: "PIN ပြောင်းလဲပြီးပါပြီ!",
+                msgSaved: "Saved! ✨",
+                msgDelConfirm: "ဖျက်မှာလား?",
+                msgGoalPrompt: "Target (Goal) သတ်မှတ်ပါ-",
+                msgReinvestInvalid: "ပမာဏမှန်ကန်စွာထည့်ပါ။",
+                msgReinvestLow: "စုမိငွေ မလုံလောက်ပါ။",
+                msgReinvestConfirm: "ကို စုမိငွေထဲမှနှုတ်ပြီး အရင်းထဲသို့ ပေါင်းထည့်မှာ သေချာပါသလား?",
+                msgReinvestSuccess: "အရင်းထဲသို့ ပေါင်းထည့်ပြီးပါပြီ! 🚀",
+                msgResetConfirm: "Data အကုန်ဖျက်မှာလား?",
+                reinvestLog: "Re-invest (စုမိငွေမှအရင်းသို့)",
+                statusLow: "Wallet Status: Low Balance ⚠️",
+                statusHealthy: "Wallet Status: Healthy ✅",
+                noNote: "No Note"
+            },
+            en: {
+                pinText: "Enter PIN",
+                totalLabel: "TOTAL BALANCE",
+                capLabel: "Capital",
+                savedLabel: "Saved (70%)",
+                spendLabel: "Spendable (30%)",
+                entryTitle: "New Entry ✨",
+                itemsBtn: "Inventory List",
+                phonesBtn: "Phone List",
+                typeLabel: "Type",
+                optIn: "Income (Cap + Prof)",
+                optBus: "Business Expense",
+                optPer: "Personal Expense",
+                inCap: "Capital",
+                inProf: "Profit",
+                outAmt: "Amount",
+                desc: "Description",
+                submit: "Save Entry",
+                historyTitle: "History 📖",
+                goalTitle: "Profit Goal 🎯",
+                progressLabel: "Progress",
+                setGoal: "Set Target (Goal)",
+                totalProf: "Total Profit",
+                totalSpend: "Total Spend",
+                backup: "🎂 Backup Data",
+                settingsTitle: "Settings ⚙️",
+                reinvestTitle: "Re-invest",
+                reinvestLabel: "Amount to transfer from Saved to Capital",
+                reinvestBtn: "Transfer to Capital",
+                reinvestNote: "* Re-use saved profits as business capital",
+                langLabel: "Language",
+                pinLock: "Passcode Lock 🔒",
+                changePin: "Change PIN",
+                export: "Export Backup (.json)",
+                reset: "Reset All Data",
+                navEntry: "ENTRY",
+                navHistory: "LOGS",
+                navInsights: "INSIGHTS",
+                navSettings: "SETTINGS",
+                msgPinError: "Incorrect PIN.",
+                msgPinSuccess: "PIN Changed successfully!",
+                msgSaved: "Saved! ✨",
+                msgDelConfirm: "Delete this item?",
+                msgGoalPrompt: "Set Target (Goal):",
+                msgReinvestInvalid: "Invalid amount.",
+                msgReinvestLow: "Insufficient saved profit.",
+                msgReinvestConfirm: " are you sure to move from Saved to Capital?",
+                msgReinvestSuccess: "Re-invested successfully! 🚀",
+                msgResetConfirm: "Reset all data?",
+                reinvestLog: "Re-invest (Saved to Cap)",
+                statusLow: "Wallet Status: Low Balance ⚠️",
+                statusHealthy: "Wallet Status: Healthy ✅",
+                noNote: "No Note"
+            }
         };
+
+        // --- DATA MIGRATION LOGIC ---
+        let savedData = JSON.parse(localStorage.getItem('my_wealth_v1'));
+        let defaultData = {
+            capital: 0, savedProfit: 0, spendableProfit: 0, logs: [], 
+            target: 1000000, totalProfitEver: 0, totalSpendEver: 0,
+            usePin: false, pin: "1234", lang: "my"
+        };
+        let data = savedData ? { ...defaultData, ...savedData } : defaultData;
+        localStorage.setItem('my_wealth_v1', JSON.stringify(data));
 
         window.onload = () => {
+            applyLang();
+            if(data.usePin) {
+                document.getElementById('lock-screen').style.display = 'flex';
+                document.getElementById('pinHiddenInput').focus();
+            }
             updateUI();
-            setTimeout(() => document.body.classList.add('loaded'), 1500);
+            setTimeout(() => document.body.classList.add('loaded'), 800);
         };
 
+        function applyLang() {
+            const l = translations[data.lang] || translations['my'];
+            document.getElementById('lang-pin-text').innerText = l.pinText;
+            document.getElementById('lang-total-label').innerText = l.totalLabel;
+            document.getElementById('lang-cap-label').innerText = l.capLabel;
+            document.getElementById('lang-saved-label').innerText = l.savedLabel;
+            document.getElementById('lang-spend-label').innerText = l.spendLabel;
+            document.getElementById('lang-entry-title').innerText = l.entryTitle;
+            document.getElementById('lang-items-btn').innerText = l.itemsBtn;
+            document.getElementById('lang-phones-btn').innerText = l.phonesBtn;
+            document.getElementById('lang-type-label').innerText = l.typeLabel;
+            document.getElementById('lang-opt-in').innerText = l.optIn;
+            document.getElementById('lang-opt-bus').innerText = l.optBus;
+            document.getElementById('lang-opt-per').innerText = l.optPer;
+            document.getElementById('lang-in-cap-label').innerText = l.inCap;
+            document.getElementById('lang-in-prof-label').innerText = l.inProf;
+            document.getElementById('lang-out-amt-label').innerText = l.outAmt;
+            document.getElementById('lang-desc-label').innerText = l.desc;
+            document.getElementById('submitBtn').innerText = l.submit;
+            document.getElementById('lang-history-title').innerText = l.historyTitle;
+            document.getElementById('lang-goal-title').innerText = l.goalTitle;
+            document.getElementById('lang-progress-label').innerText = l.progressLabel;
+            document.getElementById('lang-set-goal').innerText = l.setGoal;
+            document.getElementById('lang-total-prof-label').innerText = l.totalProf;
+            document.getElementById('lang-total-spend-label').innerText = l.totalSpend;
+            document.getElementById('lang-backup-label').innerText = l.backup;
+            document.getElementById('lang-settings-title').innerText = l.settingsTitle;
+            document.getElementById('lang-reinvest-title').innerText = l.reinvestTitle;
+            document.getElementById('lang-reinvest-label').innerText = l.reinvestLabel;
+            document.getElementById('lang-reinvest-btn').innerText = l.reinvestBtn;
+            document.getElementById('lang-reinvest-note').innerText = l.reinvestNote;
+            document.getElementById('lang-lang-label').innerText = l.langLabel;
+            document.getElementById('lang-pin-lock').innerText = l.pinLock;
+            document.getElementById('lang-change-pin').innerText = l.changePin;
+            document.getElementById('lang-export').innerText = l.export;
+            document.getElementById('lang-reset-btn').innerText = l.reset;
+            document.getElementById('lang-nav-entry').innerText = l.navEntry;
+            document.getElementById('lang-nav-history').innerText = l.navHistory;
+            document.getElementById('lang-nav-insights').innerText = l.navInsights;
+            document.getElementById('lang-nav-settings').innerText = l.navSettings;
+            document.getElementById('langSelect').value = data.lang;
+        }
+
+        function changeLang(val) {
+            data.lang = val;
+            saveData();
+            applyLang();
+            if(document.getElementById('page-history').classList.contains('active')) renderLogs();
+            if(document.getElementById('page-insights').classList.contains('active')) renderAnalytics();
+        }
+
+        // PIN logic
+        function handlePinInput(el) {
+            const dots = document.querySelectorAll('.dot');
+            dots.forEach((dot, i) => dot.className = i < el.value.length ? 'dot active' : 'dot');
+            if(el.value.length === 4) {
+                if(el.value === data.pin) {
+                    document.getElementById('lock-screen').style.display = 'none';
+                    el.value = "";
+                } else {
+                    alert(translations[data.lang].msgPinError);
+                    el.value = "";
+                    dots.forEach(d => d.className = 'dot');
+                }
+            }
+        }
+
+        function togglePinLock() { data.usePin = !data.usePin; saveData(); updateUI(); }
+        
+        // --- FIXED NEW PIN FUNCTION ---
+        function setNewPin() {
+            const p = prompt(translations[data.lang].pinText + " (4 digits):");
+            if(p !== null) { // Cancel မနှိပ်ရင်
+                if(p.length === 4 && !isNaN(p)) { 
+                    data.pin = p; 
+                    saveData(); 
+                    alert(translations[data.lang].msgPinSuccess); 
+                } else {
+                    alert("PIN must be 4 numbers.");
+                }
+            }
+        }
+
+        // Navigation
         function changePage(pageId, btn) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             if(pageId === 'page-history') renderLogs();
-            if(pageId === 'page-insights') renderInsights();
+            if(pageId === 'page-insights') renderAnalytics();
         }
 
         function toggleInputs() {
@@ -198,76 +509,124 @@
             document.getElementById('submitBtn').className = type === 'in' ? "btn btn-primary" : "btn btn-danger";
         }
 
+        // Entry Processing
         function processEntry() {
             const type = document.getElementById('entryType').value;
-            const desc = document.getElementById('desc').value || "No Note";
-            const now = new Date();
-            const timeStr = `${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')} | ${now.toLocaleDateString()}`;
+            const descInput = document.getElementById('desc').value;
+            const desc = descInput || translations[data.lang].noNote;
+            const id = Date.now();
+            const date = new Date().toLocaleDateString();
 
             if(type === 'in') {
                 const ci = parseFloat(document.getElementById('inCap').value) || 0;
                 const pi = parseFloat(document.getElementById('inProf').value) || 0;
                 const sPart = Math.floor(pi * 0.7);
-                data.capital += ci;
-                data.savedProfit += sPart;
-                data.spendableProfit += (pi - sPart);
-                data.totalProfitEver += pi;
-                data.logs.unshift({ desc, type, amt: ci+pi, date: timeStr });
+                const spPart = pi - sPart;
+                data.capital += ci; data.savedProfit += sPart; data.spendableProfit += spPart; data.totalProfitEver += pi;
+                data.logs.unshift({ id, desc, type, amt: ci+pi, cap: ci, prof: pi, sPart, spPart, date });
             } else {
                 const amt = parseFloat(document.getElementById('outAmt').value) || 0;
                 if(amt <= 0) return;
                 if(type === 'bus_out') data.capital -= amt;
                 else { data.spendableProfit -= amt; data.totalSpendEver += amt; }
-                data.logs.unshift({ desc, type, amt, date: timeStr });
+                data.logs.unshift({ id, desc, type, amt, date });
             }
-            saveData(); clearForm(); alert("Saved! ✨");
+            saveData(); clearForm(); alert(translations[data.lang].msgSaved);
         }
 
-        function updateUI() {
-            document.getElementById('capVal').innerText = data.capital.toLocaleString() + " K";
-            document.getElementById('savedVal').innerText = data.savedProfit.toLocaleString() + " K";
-            document.getElementById('spendVal').innerText = data.spendableProfit.toLocaleString() + " K";
-            document.getElementById('totalCash').innerText = (data.capital + data.savedProfit + data.spendableProfit).toLocaleString() + " K";
-        }
+        // Re-invest Function
+        function reinvestSaved() {
+            const amt = parseFloat(document.getElementById('reinvestAmt').value) || 0;
+            const l = translations[data.lang];
+            if (amt <= 0) { alert(l.msgReinvestInvalid); return; }
+            if (amt > data.savedProfit) { alert(l.msgReinvestLow); return; }
 
-        function renderInsights() {
-            const percent = Math.min(Math.round((data.totalProfitEver / data.target) * 100), 100);
-            document.getElementById('goalPercent').innerText = percent + "%";
-            document.getElementById('goalBar').style.width = percent + "%";
-            document.getElementById('statTotalProf').innerText = data.totalProfitEver.toLocaleString() + " K";
-            document.getElementById('statTotalSpend').innerText = data.totalSpendEver.toLocaleString() + " K";
+            if (confirm(amt.toLocaleString() + " K " + l.msgReinvestConfirm)) {
+                data.savedProfit -= amt;
+                data.capital += amt;
+                
+                const id = Date.now();
+                const date = new Date().toLocaleDateString();
+                data.logs.unshift({ 
+                    id, 
+                    desc: l.reinvestLog, 
+                    type: "reinvest", 
+                    amt: amt, 
+                    date: date 
+                });
 
-            const health = document.getElementById('walletHealth');
-            if(data.spendableProfit < 50000) {
-                health.innerText = "Wallet Status: Critical (Low Cash) ⚠️";
-                health.className = "health-card health-bad";
-            } else {
-                health.innerText = "Wallet Status: Healthy ✅";
-                health.className = "health-card health-good";
+                document.getElementById('reinvestAmt').value = "";
+                saveData();
+                alert(l.msgReinvestSuccess);
             }
-        }
-
-        function setGoal() {
-            const newGoal = prompt("ဒီလအတွက် အမြတ် Target (Goal) သတ်မှတ်ပါ-", data.target);
-            if(newGoal) { data.target = parseFloat(newGoal); saveData(); renderInsights(); }
         }
 
         function renderLogs() {
-            const list = document.getElementById('logList');
-            list.innerHTML = data.logs.length ? data.logs.map(l => `
-                <div class="log-card">
-                    <div class="log-meta"><h4>${l.desc}</h4><small>${l.date}</small></div>
-                    <div class="log-amt" style="color:${l.type==='in'?'var(--success)':'var(--danger)'}">${l.type==='in'?'+':'-'}${l.amt.toLocaleString()}</div>
-                </div>`).join('') : '<p style="text-align:center;opacity:0.5">No records found.</p>';
+            document.getElementById('logList').innerHTML = data.logs.map(l => {
+                let color = 'var(--success)';
+                let symbol = '+';
+                if(l.type === 'bus_out' || l.type === 'per_out') { color = 'var(--danger)'; symbol = '-'; }
+                if(l.type === 'reinvest') { color = 'var(--purple)'; symbol = '🔄'; }
+
+                return `
+                <div class="log-card" style="border-left-color: ${color}">
+                    <div><h4 style="margin:0;">${l.desc}</h4><small style="opacity:0.5;">${l.date}</small></div>
+                    <div style="text-align:right">
+                        <div style="color:${color}; font-weight:bold;">${symbol}${l.amt.toLocaleString()}</div>
+                        <button onclick="deleteEntry(${l.id})" style="background:none; border:none; opacity:0.3; cursor:pointer;">🗑️</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function renderAnalytics() {
+            const goalPer = Math.min(Math.round((data.totalProfitEver / data.target) * 100), 100);
+            document.getElementById('goalPercent').innerText = goalPer + "%";
+            document.getElementById('goalBar').style.width = goalPer + "%";
+            document.getElementById('statTotalProf').innerText = data.totalProfitEver.toLocaleString() + " K";
+            document.getElementById('statTotalSpend').innerText = data.totalSpendEver.toLocaleString() + " K";
+            
+            const status = document.getElementById('walletStatus');
+            const l = translations[data.lang];
+            if(data.spendableProfit < 0) { status.innerText = l.statusLow; status.style.color = "var(--danger)"; }
+            else { status.innerText = l.statusHealthy; status.style.color = "var(--success)"; }
+        }
+
+        function updateUI() {
+            document.getElementById('totalCash').innerText = (data.capital + data.savedProfit + data.spendableProfit).toLocaleString() + " K";
+            document.getElementById('capVal').innerText = data.capital.toLocaleString() + " K";
+            document.getElementById('savedVal').innerText = data.savedProfit.toLocaleString() + " K";
+            document.getElementById('spendVal').innerText = data.spendableProfit.toLocaleString() + " K";
+            document.getElementById('pinToggle').className = data.usePin ? "toggle-box on" : "toggle-box";
+        }
+
+        function deleteEntry(id) {
+            if(!confirm(translations[data.lang].msgDelConfirm)) return;
+            const item = data.logs.find(l => l.id === id);
+            if(item.type === 'in') {
+                data.capital -= item.cap; data.savedProfit -= item.sPart; data.spendableProfit -= item.spPart; data.totalProfitEver -= item.prof;
+            } else if(item.type === 'reinvest') {
+                data.capital -= item.amt; data.savedProfit += item.amt;
+            } else {
+                if(item.type === 'bus_out') data.capital += item.amt; else { data.spendableProfit += item.amt; data.totalSpendEver -= item.amt; }
+            }
+            data.logs = data.logs.filter(l => l.id !== id);
+            saveData(); renderLogs();
+        }
+
+        function setGoal() {
+            const g = prompt(translations[data.lang].msgGoalPrompt, data.target);
+            if(g) { data.target = parseFloat(g); saveData(); renderAnalytics(); }
         }
 
         function saveData() { localStorage.setItem('my_wealth_v1', JSON.stringify(data)); updateUI(); }
-        function clearForm() { 
-            document.getElementById('inCap').value = ''; document.getElementById('inProf').value = '';
-            document.getElementById('outAmt').value = ''; document.getElementById('desc').value = '';
+        function clearForm() { document.querySelectorAll('#page-input input').forEach(i => i.value = ''); }
+        function exportData() {
+            const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = "wallet_backup.json"; a.click();
         }
-        function confirmReset() { if(confirm("Data တွေ အကုန်ဖျက်မှာလား?")) { localStorage.clear(); location.reload(); } }
-        function liveSplit() { /* Preview logic removed for clean UI, but results are calculated on save */ }
+        function confirmReset() { if(confirm(translations[data.lang].msgResetConfirm)) { localStorage.clear(); location.reload(); } }
     </script>
 </body>
 </html>
